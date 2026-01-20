@@ -1,0 +1,106 @@
+{  
+  "Ratio RS vs VOO (6M, ratio, %)": {
+    "description": "6-month relative strength vs VOO (ratio)",
+    "unit": "percentage",
+    "thresholds": [2, 5, 15, 30],
+    "labels": ["Neutral/Lagging", "Outperformance", "Leader", "Dominant Leader", "Late Cycling"],
+    "colors": ["#1864ab", "#22b8cf", "#51cf66", "#fd7e14", "#f03e3e"],
+    "text_colors": ["#ffffff", "#000000", "#000000", "#000000", "#ffffff"]
+  },
+  "Ratio vs SMA200 (ratio, %)": {
+    "description": "Ratio series relative to 200-day SMA (percentage)",
+    "unit": "percentage",
+    "thresholds": [2, 5, 20.0, 40.0],
+    "labels": ["Weakening Trend", "Early Trend", "Healthy Trend", "Strong", "Extended"],
+    "colors": ["#1864ab", "#22b8cf", "#51cf66", "#fd7e14", "#f03e3e"],
+    "text_colors": ["#ffffff", "#000000", "#000000", "#000000", "#ffffff"]
+  },
+  "Days Above SMA50 (ratio, %)": {
+    "description": "% of days ratio was above 50-day SMA",
+    "unit": "percentage",
+    "thresholds": [60, 75, 85, 90],
+    "labels": ["Downtrending/Neutral", "Small Trend", "Persistent", "Late Cycle", "Parabolic"],
+    "colors": ["#1864ab", "#22b8cf", "#51cf66", "#fd7e14", "#f03e3e"],
+    "text_colors": ["#ffffff", "#000000", "#000000", "#000000", "#ffffff"]
+  },
+  "RSI (14, ratio)": {
+    "description": "RSI (14) of ratio series",
+    "unit": "index",
+    "thresholds": [40, 50, 70, 80],
+    "labels": ["Bearish", "Neutral", "Bullish", "Overbought", "Climactic"],
+    "colors": ["#1864ab", "#22b8cf", "#51cf66", "#fd7e14", "#f03e3e"],
+    "text_colors": ["#ffffff", "#000000", "#000000", "#000000", "#ffffff"]
+  },
+  "MACD (ratio, %)": {
+    "description": "MACD line (ratio, normalized)",
+    "unit": "percentage",
+    "thresholds": [0, 0.1, 0.3, 1],
+    "labels": ["Negative", "Neutral", "Leadership", "Strong", "Extreme"],
+    "colors": ["#1864ab", "#22b8cf", "#51cf66", "#fd7e14", "#f03e3e"],
+    "text_colors": ["#ffffff", "#000000", "#000000", "#000000", "#ffffff"]
+  },
+  "MACD Histogram (ratio, %)": {
+    "description": "MACD histogram (ratio, normalized)",
+    "unit": "percentage",
+    "thresholds": [0.0, 0.1, 0.30, 0.70],
+    "labels": ["Decelerating", "Flat", "Accumulating", "Accelerating", "Blowoff"],
+    "colors": ["#1864ab", "#22b8cf", "#51cf66", "#fd7e14", "#f03e3e"],
+    "text_colors": ["#ffffff", "#000000", "#000000", "#000000", "#ffffff"]
+  },
+  "MACD Hist Change (60d, ratio, %)": {
+    "description": "60-day change in MACD histogram (ratio)",
+    "unit": "percentage",
+    "thresholds": [0.0, 0.05, 0.20, 0.40],
+    "labels": ["Losing Steam", "Consolidating", "Expanding", "Surging", "Spike"],
+    "colors": ["#1864ab", "#22b8cf", "#51cf66", "#fd7e14", "#f03e3e"],
+    "text_colors": ["#ffffff", "#000000", "#000000", "#000000", "#ffffff"]
+  },
+  "Volatility (ratio, %)": {
+    "description": "Annualized volatility of ratio series",
+    "unit": "percentage",
+    "thresholds": [5, 10, 20, 40],
+    "labels": ["Dead", "Calm", "Active", "Volatile", "Casino"],
+    "colors": ["#1864ab", "#22b8cf", "#51cf66", "#fd7e14", "#f03e3e"],
+    "text_colors": ["#ffffff", "#000000", "#000000", "#000000", "#ffffff"]
+  },
+  "RSI Up/Down Volatility Ratio": {
+    "description": "Ratio of upward to downward volatility in RSI (14) of ratio series. >1: upswings stronger, <1: downswings stronger.",
+    "unit": "ratio",
+    "thresholds": [0.7, 0.95, 1.05, 1.3],
+    "labels": ["Downside Dominant", "Balanced Bearish", "Balanced Bullish", "Upside Dominant", "Explosive Upside"],
+    "colors": ["#f03e3e", "#fd7e14", "#51cf66", "#22b8cf", "#1864ab"],
+    "text_colors": ["#ffffff", "#000000", "#000000", "#000000", "#ffffff"]
+  },
+  "Ratio SMA200 Slope (50d, %)": {
+    "description": "Slope of 200-day SMA of ratio series over last 50 trading days (percent change)",
+    "unit": "percentage",
+    "thresholds": [-0.5, -0.2, 0.3, 1.0],
+    "labels": ["Regime Deterioration", "Consolidation", "Healthy Trend", "Strong Regime Expansion", "Very Strong"],
+    "colors": ["#f03e3e", "#22b8cf", "#51cf66", "#fd7e14", "#1864ab"],
+    "text_colors": ["#ffffff", "#000000", "#000000", "#000000", "#ffffff"]
+  },
+  "Ratio OBV vs OBV SMA50": {
+    "description": "Ratio of OBV to its 50-day SMA (OBV measures volume flow, SMA smooths it)",
+    "unit": "ratio",
+    "thresholds": [0.98, 1.01, 1.05, 1.12],
+    "labels": ["Below SMA", "At SMA", "Above SMA", "Strong Accumulation", "Extreme Accumulation"],
+    "colors": ["#1864ab", "#22b8cf", "#51cf66", "#fd7e14", "#f03e3e"],
+    "text_colors": ["#ffffff", "#000000", "#000000", "#000000", "#ffffff"]
+  },
+  "Ratio OBV ROC (20d, %)": {
+    "description": "Rate of change of OBV ratio over last 20 trading days (percent)",
+    "unit": "percentage",
+    "thresholds": [0, 2, 10, 20],
+    "labels": ["Sharp Decline", "Flat/Declining", "Mild Accumulation", "Strong Accumulation", "Surge"],
+    "colors": ["#1864ab", "#22b8cf", "#51cf66", "#fd7e14", "#f03e3e"],
+    "text_colors": ["#ffffff", "#000000", "#000000", "#000000", "#ffffff"]
+  },
+  "Max Ratio Drawdown (6mo, %)": {
+    "description": "Maximum drawdown of ratio series over the last 6 months (percent)",
+    "unit": "percentage",
+    "thresholds": [-35, -20, -10, -5],
+    "labels": ["Severe", "Major", "Moderate", "Mild", "Stable"],
+    "colors": ["#f03e3e", "#fd7e14", "#51cf66", "#22b8cf", "#1864ab"],
+    "text_colors": ["#ffffff", "#000000", "#000000", "#000000", "#ffffff"]
+  }
+}
