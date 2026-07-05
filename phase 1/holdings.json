@@ -16,7 +16,7 @@
     "ELF", "QS", "LOPE", "MTN", "CZR", "WHR", "BYD", "MSGS", "BBWI", "TNL",
     "CROX", "VVV", "YETI", "SIRI", "NWS", "LLYVK", "RH", "PAG",
     "PVH", "CHH", "HOG", "CAR", "BIRK", "PENN", "DDS", "FWONA", "NWL", "LLYVA",
-    "LCID", "COLM", "WEN", "UAA", "UA", "COTY", "LENB", "UHAL"
+    "LCID", "COLM", "WEN", "UAA", "UA", "COTY", "UHAL"
 ],
 "qqqm": [
     "NVDA", "AAPL", "MSFT", "AMZN", "GOOGL", "TSLA", "META", "GOOG", "WMT", "AVGO",
@@ -54,7 +54,7 @@
     "STZ", "CASY", "CHD", "KHC", "USFD", "MKC", "TSN", "BG", "PFGC", "CLX",
     "SJM", "CELH", "COKE", "TAP", "CAG", "INGR", "HRL", "SFM", "ACI", "DAR",
     "LW", "CPB", "PRMB", "POST", "BRBR", "FRPT", "FLO", "SAM",
-    "PPC", "REYN", "SEB", "SFD"
+    "PPC", "REYN", "SEB"
 ],
 "iyw": [
     "NVDA", "AAPL", "MSFT", "META", "AVGO", "MU", "AMD", "GOOGL", "PLTR", "GOOG",
@@ -140,6 +140,25 @@
     "PCTY", "VNT", "LSTR", "BC", "FCN", "LPX", "WEX", "ST", "SON", "AUR", "TREX", "GPK", "ADT", "MSM", "FOUR",
     "SLGN", "WSC", "JHX", "BILL", "RHI", "HAYW", "DRS", "LOAR", "EEFT", "CXT",
     "WU", "MAN", "SNDR"
-]
-
+],
+"xlp": [
+    "WMT", "COST", "PG", "KO", "PM", "PEP", "CL", "MDLZ", "MO", "MNST",
+    "TGT", "SYY", "KR", "KDP", "KVUE", "KMB", "DG", "ADM", "HSY", "EL",
+    "GIS", "CHD", "DLTR", "STZ", "KHC", "TSN", "MKC", "BG", "CLX", "SJM",
+    "CAG", "TAP", "HRL", "LW", "CPB"
+],
+"msci_international": [
+    "EWP", "EPOL", "EWJ", "EWC", "EWZ", "EWU", "EWY", "EWD", "EWW", "EWL",
+    "EWN", "EWQ", "EWI", "EWT", "PBUS", "DXJ"],
+"discount_store": ["WMT", "TGT", "DG", "DLTR", "FIVE", "OLLI", "TJX", "ROST", "BURL", "COST", "BJ", "PSMT", "GO"],
+"memory": ["IFNNY", "PSTG", "SNDK", "WDC", "MU", "STX"],
+"xli": [
+    "CAT", "GE", "RTX", "GEV", "BA", "UNP", "HON", "ETN", "DE", "UBER",
+    "LMT", "PH", "TT", "HWM", "NOC", "MMM", "UPS", "GD", "WM", "ADP",
+    "JCI", "CMI", "EMR", "FDX", "ITW", "PWR", "CSX", "TDG", "NSC", "CTAS",
+    "PCAR", "LHX", "URI", "AME", "FAST", "CARR", "GWW", "FIX", "DAL", "RSG",
+    "WAB", "ROK", "OTIS", "UAL", "EME", "AXON", "ODFL", "IR", "CPRT", "DOV",
+    "XYL", "PAYX", "HUBB", "LUV", "VRSK", "EFX", "VLTO", "LDOS", "BR", "CHRW",
+    "SNA", "EXPD", "LII", "FTV", "TXT", "ROL", "JBHT", "PNR", "MAS", "HII",
+    "NDSN", "J", "IEX", "ALLE", "SWK", "BLDR", "GNRC", "AOS", "PAYC"]
 }

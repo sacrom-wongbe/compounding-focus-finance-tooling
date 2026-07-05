@@ -201,6 +201,32 @@ def compute_metrics(
         else:
             rs_6m_ex1 = np.nan
         row["rs_6m_ex1"] = rs_6m_ex1
+
+        # 2b) RS 3M (pure, not excluding recent month)
+        if len(LR) >= TRADING_DAYS_1M * 3:
+            rs_3m = 100 * (LR.iloc[-1] - LR.iloc[-TRADING_DAYS_1M*3])
+            # 3M slope (use last 3 months, allow for >= window)
+            LR_window_3m = LR.iloc[-TRADING_DAYS_1M*3:]
+            x_3m = np.arange(len(LR_window_3m))
+            if len(LR_window_3m) >= TRADING_DAYS_1M * 3:
+                slope_3m = np.polyfit(x_3m, LR_window_3m, 1)[0]
+                rs_slope_3m = slope_3m * 100
+            else:
+                rs_slope_3m = np.nan
+        else:
+            rs_3m = np.nan
+            rs_slope_3m = np.nan
+        row["rs_3m"] = rs_3m
+        row["rs_slope_3m"] = rs_slope_3m
+
+        # 2b) RS 3M (pure, not excluding recent month)
+        if len(LR) >= TRADING_DAYS_1M * 3:
+            t_now = -1
+            t_3M = -(TRADING_DAYS_1M * 3)
+            rs_3m = 100 * (LR.iloc[t_now] - LR.iloc[t_3M])
+        else:
+            rs_3m = np.nan
+        row["rs_3m"] = rs_3m
         # 3) RS Slope 6M ex-1M
         if has_6m:
             start = -(TRADING_DAYS_6M + EXCLUDE_RECENT)
@@ -253,24 +279,22 @@ def compute_metrics(
                 row["pct_days_ratio_above_sma200_6m"] = np.nan
         else:
             row["pct_days_ratio_above_sma200_6m"] = np.nan
-        # 7) RS Volatility 6M ex-1M
-        if has_6m:
-            start = -(TRADING_DAYS_6M + EXCLUDE_RECENT)
-            end = -EXCLUDE_RECENT
-            dLR_window = dLR.iloc[start:end]
-            if dLR_window.notna().sum() == TRADING_DAYS_6M:
-                rs_vol = 100 * dLR_window.std() * np.sqrt(252)
-                row["rs_vol_6m_ex1"] = rs_vol
+        # 7) RS Volatility 3M (not excluding recent month)
+        if len(dLR) >= TRADING_DAYS_1M * 3:
+            dLR_window_3m = dLR.iloc[-TRADING_DAYS_1M*3:]
+            if dLR_window_3m.notna().sum() == TRADING_DAYS_1M * 3:
+                rs_vol_3m = 100 * dLR_window_3m.std() * np.sqrt(252)
+                row["rs_vol_3m"] = rs_vol_3m
                 # RS Volatility Slope (linear regression) (10000x scaling)
-                x = np.arange(len(dLR_window))
-                rs_vol_slope = np.polyfit(x, dLR_window, 1)[0] * 10000 if len(dLR_window) == TRADING_DAYS_6M else np.nan
-                row["rs_vol_slope_6m_ex1"] = rs_vol_slope
+                x_3m = np.arange(len(dLR_window_3m))
+                rs_vol_slope_3m = np.polyfit(x_3m, dLR_window_3m, 1)[0] * 10000 if len(dLR_window_3m) == TRADING_DAYS_1M * 3 else np.nan
+                row["rs_vol_slope_3m"] = rs_vol_slope_3m
             else:
-                row["rs_vol_6m_ex1"] = np.nan
-                row["rs_vol_slope_6m_ex1"] = np.nan
+                row["rs_vol_3m"] = np.nan
+                row["rs_vol_slope_3m"] = np.nan
         else:
-            row["rs_vol_6m_ex1"] = np.nan
-            row["rs_vol_slope_6m_ex1"] = np.nan
+            row["rs_vol_3m"] = np.nan
+            row["rs_vol_slope_3m"] = np.nan
         # 8) RS Max Drawdown 6M ex-1M
         if has_6m:
             start = -(TRADING_DAYS_6M + EXCLUDE_RECENT)
@@ -319,7 +343,7 @@ def compute_metrics(
             row["mom_eff_6m_ex1"] = np.nan
             row["mom_eff_slope_6m_ex1"] = np.nan
 
-        # --- NEW: Distribution Days (last 30 days) ---
+        # Distribution Days (last 30 and last 10 days)
         # Only compute if both price and volume data are available
         try:
             # Try to fetch volume data for this ticker
@@ -345,12 +369,16 @@ def compute_metrics(
                 (volume > vol_avg_20)
             )
             dist_days_30 = distribution_day.rolling(30).sum().iloc[-1]
+            dist_days_10 = distribution_day.rolling(10).sum().iloc[-1]
             row["distribution_days_30"] = dist_days_30
+            row["distribution_days_10"] = dist_days_10
         except Exception as e:
             row["distribution_days_30"] = np.nan
+            row["distribution_days_10"] = np.nan
         # --- Up/Down Volume Pressure (UVP) ---
         try:
-            w = 40  # ~3 months
+            w_40 = 40  # ~2 months
+            w_10 = 10  # ~0.5 month
             close = P
             yf_hist = yf.Ticker(ticker).history(period="max")
             
@@ -368,33 +396,38 @@ def compute_metrics(
             if volume.isna().all():
                 row["uvp_pct_40d"] = np.nan
                 row["uvp_slope_40d"] = np.nan
+                row["uvp_pct_10d"] = np.nan
             else:
                 ret = close.pct_change()
                 up = ret > 0
                 down = ret < 0
                 
                 # KEY FIX: Fill NaN with 0 so rolling can accumulate
-                up_vol = volume.where(up, 0).rolling(w, min_periods=1).sum()
-                down_vol = volume.where(down, 0).rolling(w, min_periods=1).sum()
-                
-                # Avoid division by zero
-                total_vol = up_vol + down_vol
-                uvp_pct = up_vol / total_vol.replace(0, np.nan)
+                up_vol_40 = volume.where(up, 0).rolling(w_40, min_periods=1).sum()
+                down_vol_40 = volume.where(down, 0).rolling(w_40, min_periods=1).sum()
+                total_vol_40 = up_vol_40 + down_vol_40
+                uvp_pct_40 = up_vol_40 / total_vol_40.replace(0, np.nan)
+                row["uvp_pct_40d"] = uvp_pct_40.iloc[-1] if not uvp_pct_40.empty and not pd.isna(uvp_pct_40.iloc[-1]) else np.nan
 
-                row["uvp_pct_40d"] = uvp_pct.iloc[-1] if not uvp_pct.empty and not pd.isna(uvp_pct.iloc[-1]) else np.nan
-
-                uvp_pct_window = uvp_pct.dropna()
-                
-                if len(uvp_pct_window) > 1:
-                    x = np.arange(len(uvp_pct_window))
-                    uvp_slope = np.polyfit(x, uvp_pct_window, 1)[0] * 1000
-                    row["uvp_slope_40d"] = uvp_slope
+                uvp_pct_window_40 = uvp_pct_40.dropna()
+                if len(uvp_pct_window_40) > 1:
+                    x_40 = np.arange(len(uvp_pct_window_40))
+                    uvp_slope_40 = np.polyfit(x_40, uvp_pct_window_40, 1)[0] * 1000
+                    row["uvp_slope_40d"] = uvp_slope_40
                 else:
                     row["uvp_slope_40d"] = np.nan
-                    
+
+                # 10-day UVP percentage
+                up_vol_10 = volume.where(up, 0).rolling(w_10, min_periods=1).sum()
+                down_vol_10 = volume.where(down, 0).rolling(w_10, min_periods=1).sum()
+                total_vol_10 = up_vol_10 + down_vol_10
+                uvp_pct_10 = up_vol_10 / total_vol_10.replace(0, np.nan)
+                row["uvp_pct_10d"] = uvp_pct_10.iloc[-1] if not uvp_pct_10.empty and not pd.isna(uvp_pct_10.iloc[-1]) else np.nan
+            
         except Exception as e:
             row["uvp_pct_40d"] = np.nan
             row["uvp_slope_40d"] = np.nan
+            row["uvp_pct_10d"] = np.nan
         results.append(row)
     df = pd.DataFrame(results).set_index("ticker")
     return df
