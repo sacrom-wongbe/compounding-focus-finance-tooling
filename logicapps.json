@@ -1,0 +1,250 @@
+{
+    "definition": {
+        "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+        "contentVersion": "1.0.0.0",
+        "triggers": {},
+        "actions": {
+            "Initialize_variables": {
+                "type": "InitializeVariable",
+                "inputs": {
+                    "variables": [
+                        {
+                            "name": "NewsletterJSON",
+                            "type": "string",
+                            "value": "{\n    \"type\": \"AdaptiveCard\",\n    \"body\": [\n        {\n            \"type\": \"TextBlock\",\n            \"text\": \"This is a cybersecurity lab test!\",\n            \"weight\": \"Bolder\",\n            \"size\": \"Medium\"\n        },\n        {\n            \"type\": \"Input.Text\",\n            \"id\": \"studentName\",\n            \"placeholder\": \"Enter your name...\",\n            \"label\": \"Participant Name\"\n        }\n    ],\n    \"actions\": [\n        {\n            \"type\": \"Action.Submit\",\n            \"id\": \"submitResponse\",\n            \"title\": \"Submit Response\"\n        }\n    ],\n    \"$schema\": \"http://adaptivecards.io/schemas/adaptive-card.json\",\n    \"version\": \"1.4\"\n}"
+                        },
+                        {
+                            "name": "ImageIndexForUser",
+                            "type": "integer",
+                            "value": 0
+                        }
+                    ]
+                },
+                "runAfter": {}
+            },
+            "List_rows_present_in_a_table": {
+                "type": "ApiConnection",
+                "inputs": {
+                    "host": {
+                        "connection": {
+                            "name": "@parameters('$connections')['excelonlinebusiness-1']['connectionId']"
+                        }
+                    },
+                    "method": "get",
+                    "path": "/drives/@{encodeURIComponent('b!MRGGLNJUEEia7TkfIeTEEvnZ82a11zRNma7ngk6OwcCooAf0awHuT7CgF8U_DoMl')}/files/@{encodeURIComponent(encodeURIComponent('01674VJJHECJ6J643JP5BLJMR2J7M34NYY'))}/tables/@{encodeURIComponent('{7B17238A-6CA4-401E-B81F-BA3717DF9870}')}/items",
+                    "queries": {
+                        "source": "me"
+                    }
+                },
+                "runAfter": {
+                    "Initialize_variables": [
+                        "Succeeded"
+                    ]
+                },
+                "metadata": {
+                    "01674VJJHECJ6J643JP5BLJMR2J7M34NYY": "/BRICS/Users.xlsx"
+                }
+            },
+            "For_each": {
+                "type": "Foreach",
+                "foreach": "@body('List_rows_present_in_a_table')?['value']",
+                "actions": {
+                    "Condition": {
+                        "type": "If",
+                        "expression": {
+                            "and": [
+                                {
+                                    "equals": [
+                                        "@item()?['LastImageIndex']",
+                                        ""
+                                    ]
+                                }
+                            ]
+                        },
+                        "actions": {
+                            "Set_variable": {
+                                "type": "SetVariable",
+                                "inputs": {
+                                    "name": "ImageIndexForUser",
+                                    "value": 0
+                                }
+                            }
+                        },
+                        "else": {
+                            "actions": {
+                                "Set_variable_1": {
+                                    "type": "SetVariable",
+                                    "inputs": {
+                                        "name": "ImageIndexForUser",
+                                        "value": "@mod(add(int(items('For_each')?['LastImageIndex']), 1), 4)"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "Create_SAS_URI_by_path": {
+                        "type": "ApiConnection",
+                        "inputs": {
+                            "host": {
+                                "connection": {
+                                    "name": "@parameters('$connections')['azureblob']['connectionId']"
+                                }
+                            },
+                            "method": "post",
+                            "body": {
+                                "Permissions": "Read",
+                                "ExpiryTime": "@addHours(utcNow(), 48)"
+                            },
+                            "path": "/v2/datasets/@{encodeURIComponent('AccountNameFromSettings')}/CreateSharedLinkByPath",
+                            "queries": {
+                                "path": "@concat('/security-images/test_image_', string(add(variables('ImageIndexForUser'), 1)), '.png')"
+                            }
+                        },
+                        "runAfter": {
+                            "Condition": [
+                                "Succeeded"
+                            ]
+                        }
+                    },
+                    "Post_adaptive_card": {
+                        "type": "ApiConnectionWebhook",
+                        "inputs": {
+                            "host": {
+                                "connection": {
+                                    "name": "@parameters('$connections')['teams-1']['connectionId']"
+                                }
+                            },
+                            "body": {
+                                "notificationUrl": "@listCallbackUrl()",
+                                "body": {
+                                    "messageBody": "{\n  \"type\": \"AdaptiveCard\",\n  \"body\": [\n    {\n      \"type\": \"TextBlock\",\n      \"text\": \"Cybersecurity Awareness Lab\",\n      \"weight\": \"Bolder\",\n      \"size\": \"Large\"\n    },\n    {\n      \"type\": \"TextBlock\",\n      \"text\": \"Hi @{items('For_each')?['Name']}, take a close look at the image below.\",\n      \"wrap\": true\n    },\n    {\n      \"type\": \"Image\",\n      \"url\": \"@{body('Create_SAS_URI_by_path')?['WebUrl']}\",\n      \"size\": \"Large\",\n      \"altText\": \"Security awareness image\"\n    },\n    {\n      \"type\": \"TextBlock\",\n      \"text\": \"What do you see in this image? Does anything look suspicious or unusual?\",\n      \"wrap\": true,\n      \"weight\": \"Bolder\"\n    },\n    {\n      \"type\": \"Input.Text\",\n      \"id\": \"userResponse\",\n      \"placeholder\": \"Describe what you see...\",\n      \"isMultiline\": true,\n      \"label\": \"Your observation\"\n    }\n  ],\n  \"actions\": [\n    {\n      \"type\": \"Action.Submit\",\n      \"title\": \"Submit Response\"\n    }\n  ],\n  \"$schema\": \"http://adaptivecards.io/schemas/adaptive-card.json\",\n  \"version\": \"1.4\"\n}",
+                                    "updateMessage": "Thanks for your response!",
+                                    "recipient": {
+                                        "to": "@item()?['StudentEmail']"
+                                    }
+                                }
+                            },
+                            "path": "/v1.0/teams/conversation/gatherinput/poster/Flow bot/location/@{encodeURIComponent('Chat with Flow bot')}/$subscriptions"
+                        },
+                        "runAfter": {
+                            "Create_SAS_URI_by_path": [
+                                "Succeeded"
+                            ]
+                        }
+                    },
+                    "Update_a_row": {
+                        "type": "ApiConnection",
+                        "inputs": {
+                            "host": {
+                                "connection": {
+                                    "name": "@parameters('$connections')['excelonlinebusiness-2']['connectionId']"
+                                }
+                            },
+                            "method": "patch",
+                            "body": {
+                                "LastImageIndex": "@{variables('ImageIndexForUser')}"
+                            },
+                            "path": "/drives/@{encodeURIComponent('b!MRGGLNJUEEia7TkfIeTEEvnZ82a11zRNma7ngk6OwcCooAf0awHuT7CgF8U_DoMl')}/files/@{encodeURIComponent(encodeURIComponent('01674VJJHECJ6J643JP5BLJMR2J7M34NYY'))}/tables/@{encodeURIComponent('{7B17238A-6CA4-401E-B81F-BA3717DF9870}')}/items/@{encodeURIComponent(encodeURIComponent(item()?['ID']))}",
+                            "queries": {
+                                "source": "me",
+                                "idColumn": "ID"
+                            }
+                        },
+                        "runAfter": {
+                            "Post_adaptive_card": [
+                                "Succeeded"
+                            ]
+                        },
+                        "metadata": {
+                            "01674VJJHECJ6J643JP5BLJMR2J7M34NYY": "/BRICS/Users.xlsx",
+                            "01674VJJDQ5TSPFTTDYZDJ2C4XIW7PJ6GC": "/BRICS/Book.xlsx"
+                        }
+                    },
+                    "Add_a_row_into_a_table": {
+                        "type": "ApiConnection",
+                        "inputs": {
+                            "host": {
+                                "connection": {
+                                    "name": "@parameters('$connections')['excelonlinebusiness']['connectionId']"
+                                }
+                            },
+                            "method": "post",
+                            "body": {
+                                "Timestamp": "@utcNow()",
+                                "StudentEmail": "@item()?['StudentEmail']",
+                                "ID": "@item()?['ID']",
+                                "ParticipantName": "@item()?['Name']",
+                                "ActionID": "SubmitResponse",
+                                "Response": "@outputs('Post_adaptive_card')?['body/data/userResponse']"
+                            },
+                            "path": "/codeless/v1.2/drives/@{encodeURIComponent('b!MRGGLNJUEEia7TkfIeTEEvnZ82a11zRNma7ngk6OwcCooAf0awHuT7CgF8U_DoMl')}/items/@{encodeURIComponent(encodeURIComponent('01674VJJDQ5TSPFTTDYZDJ2C4XIW7PJ6GC'))}/workbook/tables/@{encodeURIComponent('{14634A5D-7533-4B9B-AC18-C6C82D654B66}')}/rows",
+                            "queries": {
+                                "source": "me"
+                            }
+                        },
+                        "runAfter": {
+                            "Update_a_row": [
+                                "Succeeded"
+                            ]
+                        },
+                        "metadata": {
+                            "01674VJJDQ5TSPFTTDYZDJ2C4XIW7PJ6GC": "/BRICS/Book.xlsx"
+                        }
+                    }
+                },
+                "runAfter": {
+                    "List_rows_present_in_a_table": [
+                        "Succeeded"
+                    ]
+                }
+            }
+        },
+        "outputs": {},
+        "parameters": {
+            "$connections": {
+                "type": "Object",
+                "defaultValue": {}
+            }
+        },
+        "metadata": {
+            "notes": {}
+        }
+    },
+    "parameters": {
+        "$connections": {
+            "type": "Object",
+            "value": {
+                "excelonlinebusiness-1": {
+                    "id": "/subscriptions/5117fce9-7016-4728-a39f-cdfc2ad9e82b/providers/Microsoft.Web/locations/northcentralus/managedApis/excelonlinebusiness",
+                    "connectionId": "/subscriptions/5117fce9-7016-4728-a39f-cdfc2ad9e82b/resourceGroups/Phishing-Lab-Test/providers/Microsoft.Web/connections/excelonlinebusiness",
+                    "connectionName": "excelonlinebusiness",
+                    "connectionProperties": {}
+                },
+                "azureblob": {
+                    "id": "/subscriptions/5117fce9-7016-4728-a39f-cdfc2ad9e82b/providers/Microsoft.Web/locations/northcentralus/managedApis/azureblob",
+                    "connectionId": "/subscriptions/5117fce9-7016-4728-a39f-cdfc2ad9e82b/resourceGroups/Phishing-Lab-Test/providers/Microsoft.Web/connections/azureblob",
+                    "connectionName": "azureblob",
+                    "connectionProperties": {}
+                },
+                "teams-1": {
+                    "id": "/subscriptions/5117fce9-7016-4728-a39f-cdfc2ad9e82b/providers/Microsoft.Web/locations/northcentralus/managedApis/teams",
+                    "connectionId": "/subscriptions/5117fce9-7016-4728-a39f-cdfc2ad9e82b/resourceGroups/Phishing-Lab-Test/providers/Microsoft.Web/connections/teams",
+                    "connectionName": "teams",
+                    "connectionProperties": {}
+                },
+                "excelonlinebusiness-2": {
+                    "id": "/subscriptions/5117fce9-7016-4728-a39f-cdfc2ad9e82b/providers/Microsoft.Web/locations/northcentralus/managedApis/excelonlinebusiness",
+                    "connectionId": "/subscriptions/5117fce9-7016-4728-a39f-cdfc2ad9e82b/resourceGroups/Phishing-Lab-Test/providers/Microsoft.Web/connections/excelonlinebusiness",
+                    "connectionName": "excelonlinebusiness",
+                    "connectionProperties": {}
+                },
+                "excelonlinebusiness": {
+                    "id": "/subscriptions/5117fce9-7016-4728-a39f-cdfc2ad9e82b/providers/Microsoft.Web/locations/northcentralus/managedApis/excelonlinebusiness",
+                    "connectionId": "/subscriptions/5117fce9-7016-4728-a39f-cdfc2ad9e82b/resourceGroups/Phishing-Lab-Test/providers/Microsoft.Web/connections/excelonlinebusiness",
+                    "connectionName": "excelonlinebusiness",
+                    "connectionProperties": {}
+                }
+            }
+        }
+    }
+}
